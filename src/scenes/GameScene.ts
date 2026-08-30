@@ -31,12 +31,16 @@ export class GameScene extends Phaser.Scene {
   private hordeText!: Phaser.GameObjects.Text
   private flightText!: Phaser.GameObjects.Text
   private flightBar!: Phaser.GameObjects.Graphics
+  private pauseOverlay: Phaser.GameObjects.GameObject[] = []
 
   private upKey?: Phaser.Input.Keyboard.Key
   private spaceKey?: Phaser.Input.Keyboard.Key
+  private pauseKey?: Phaser.Input.Keyboard.Key
+  private escapeKey?: Phaser.Input.Keyboard.Key
   private worldSpeed = START_SPEED
   private flightRemainingMs = 0
   private criticalMassTriggered = false
+  private isPaused = false
   private isEnding = false
   private shutdownComplete = false
 
@@ -65,12 +69,30 @@ export class GameScene extends Phaser.Scene {
 
     this.upKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
     this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+    this.pauseKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.P)
+    this.escapeKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
     this.createHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this)
   }
 
   update(_time: number, delta: number): void {
     if (this.isEnding) {
+      return
+    }
+
+    const pausePressed =
+      (this.pauseKey ? Phaser.Input.Keyboard.JustDown(this.pauseKey) : false) ||
+      (this.escapeKey ? Phaser.Input.Keyboard.JustDown(this.escapeKey) : false)
+    if (pausePressed) {
+      if (this.isPaused) {
+        this.resumeGame()
+      } else {
+        this.pauseGame()
+      }
+      return
+    }
+
+    if (this.isPaused) {
       return
     }
 
@@ -85,7 +107,7 @@ export class GameScene extends Phaser.Scene {
         this.input.activePointer.isDown ||
         (this.upKey?.isDown ?? false) ||
         (this.spaceKey?.isDown ?? false)
-      this.horde.applyInput(isHeld)
+      this.horde.applyInput(isHeld, delta)
     }
 
     const travel = this.worldSpeed * deltaSeconds
@@ -107,6 +129,7 @@ export class GameScene extends Phaser.Scene {
     this.worldSpeed = START_SPEED
     this.flightRemainingMs = 0
     this.criticalMassTriggered = false
+    this.isPaused = false
     this.isEnding = false
     this.shutdownComplete = false
   }
@@ -154,6 +177,116 @@ export class GameScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setVisible(false)
     this.flightBar = this.add.graphics().setDepth(100).setScrollFactor(0)
+
+    const pauseButton = this.add
+      .rectangle(GAME_WIDTH - 14, 28, 22, 18, 0x283a32, 0.95)
+      .setStrokeStyle(1, 0x7bbf72)
+      .setDepth(110)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+    this.add
+      .text(GAME_WIDTH - 14, 28, 'II', {
+        color: COLORS.TEXT,
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(111)
+      .setScrollFactor(0)
+    pauseButton.on('pointerover', () => pauseButton.setFillStyle(0x3f5d4a, 1))
+    pauseButton.on('pointerout', () => pauseButton.setFillStyle(0x283a32, 0.95))
+    pauseButton.on('pointerdown', () => this.pauseGame())
+  }
+
+  private pauseGame(): void {
+    if (this.isPaused || this.isEnding) {
+      return
+    }
+
+    this.isPaused = true
+    this.physics.pause()
+    this.tweens.pauseAll()
+    this.pauseOverlay = this.createPauseOverlay()
+  }
+
+  private resumeGame(): void {
+    if (!this.isPaused || this.isEnding) {
+      return
+    }
+
+    this.destroyPauseOverlay()
+    this.tweens.resumeAll()
+    this.physics.resume()
+    this.isPaused = false
+  }
+
+  private createPauseOverlay(): Phaser.GameObjects.GameObject[] {
+    const overlay: Phaser.GameObjects.GameObject[] = []
+    const blocker = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x06090a, 0.82)
+      .setDepth(500)
+      .setScrollFactor(0)
+      .setInteractive()
+    const panel = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 190, 124, 0x17211d, 1)
+      .setStrokeStyle(2, 0x6ca665)
+      .setDepth(501)
+      .setScrollFactor(0)
+    const title = this.add
+      .text(GAME_WIDTH / 2, 72, 'PAUSED', {
+        color: COLORS.TEXT,
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(502)
+      .setScrollFactor(0)
+
+    overlay.push(blocker, panel, title)
+    this.addPauseOverlayButton(overlay, GAME_WIDTH / 2, 112, 'RESUME', () => this.resumeGame())
+    this.addPauseOverlayButton(overlay, GAME_WIDTH / 2, 147, 'MENU', () => {
+      this.scene.start(SCENES.MENU)
+    })
+    return overlay
+  }
+
+  private addPauseOverlayButton(
+    overlay: Phaser.GameObjects.GameObject[],
+    x: number,
+    y: number,
+    label: string,
+    action: () => void,
+  ): void {
+    const button = this.add
+      .rectangle(x, y, 104, 26, 0x3a5548)
+      .setStrokeStyle(1, 0x7bbf72)
+      .setDepth(503)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+    const text = this.add
+      .text(x, y, label, {
+        color: COLORS.TEXT,
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(504)
+      .setScrollFactor(0)
+
+    button.on('pointerover', () => button.setFillStyle(0x4a6e56))
+    button.on('pointerout', () => button.setFillStyle(0x3a5548))
+    button.on('pointerdown', action)
+    overlay.push(button, text)
+  }
+
+  private destroyPauseOverlay(): void {
+    for (const object of this.pauseOverlay) {
+      object.destroy()
+    }
+    this.pauseOverlay.length = 0
   }
 
   private updateHud(): void {
@@ -250,10 +383,13 @@ export class GameScene extends Phaser.Scene {
     this.shutdownComplete = true
     this.time.removeAllEvents()
     this.tweens.killAll()
+    this.destroyPauseOverlay()
     this.collisions?.destroy()
     this.spawner?.destroy()
     this.horde?.destroy()
     this.upKey = undefined
     this.spaceKey = undefined
+    this.pauseKey = undefined
+    this.escapeKey = undefined
   }
 }

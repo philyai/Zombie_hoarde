@@ -40,7 +40,8 @@ export const MAX_RISE_SPEED = 105
 export const MAX_FALL_SPEED = 210
 export const DIVE_THRESHOLD = 150
 export const HOVER_CEILING_Y = 98
-export const PIT_GROUNDED_TOLERANCE = 20
+export const MAX_JUMP_HOLD_MS = 650
+export const PIT_GROUNDED_TOLERANCE = 4
 
 export const HISTORY_SAMPLE_DISTANCE = 2
 export const FOLLOWER_SPACING = 3

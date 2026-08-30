@@ -6,6 +6,7 @@ import {
   HOVER_CEILING_Y,
   HISTORY_SAMPLE_DISTANCE,
   LEADER_GRAVITY,
+  MAX_JUMP_HOLD_MS,
   MAX_SPEED,
   MAX_FALL_SPEED,
   MAX_RISE_SPEED,
@@ -37,7 +38,9 @@ export class Horde {
   private nextHistorySampleX = PLAYER_X + HISTORY_SAMPLE_DISTANCE
   private population = START_HORDE_SIZE
   private flightActive = false
-  private hoverHeld = false
+  private jumpInputHeld = false
+  private jumpHoldElapsedMs = 0
+  private jumpSpent = false
   private forwardSpeed = 0
 
   constructor(private readonly scene: Phaser.Scene) {
@@ -74,23 +77,34 @@ export class Horde {
     return body.blocked.down || body.touching.down || (body.bottom >= GROUND_Y - 1 && body.velocity.y >= 0)
   }
 
-  applyInput(isHeld: boolean): void {
+  applyInput(isHeld: boolean, deltaMs: number): void {
     if (this.population === 0 || this.flightActive) {
       return
     }
 
-    this.hoverHeld = isHeld
     const body = this.body
     body.setGravityY(LEADER_GRAVITY)
 
     if (!isHeld) {
-      this.leader.setAccelerationY(DROP_ACCELERATION)
-      body.velocity.y = Phaser.Math.Clamp(body.velocity.y, -MAX_RISE_SPEED, MAX_FALL_SPEED)
+      this.jumpInputHeld = false
+      this.jumpHoldElapsedMs = 0
+      this.jumpSpent = false
+      this.startFastDrop()
       return
     }
 
-    if (this.leader.y <= HOVER_CEILING_Y) {
-      this.holdAtHoverCeiling()
+    if (!this.jumpInputHeld) {
+      this.jumpInputHeld = true
+      this.jumpHoldElapsedMs = 0
+    }
+
+    this.jumpHoldElapsedMs += Math.max(0, deltaMs)
+    if (this.jumpHoldElapsedMs >= MAX_JUMP_HOLD_MS || this.leader.y <= HOVER_CEILING_Y) {
+      this.jumpSpent = true
+    }
+
+    if (this.jumpSpent) {
+      this.startFastDrop()
       return
     }
 
@@ -120,7 +134,9 @@ export class Horde {
     }
 
     this.flightActive = active
-    this.hoverHeld = false
+    this.jumpInputHeld = false
+    this.jumpHoldElapsedMs = 0
+    this.jumpSpent = false
     this.leader.setGravityY(active ? 0 : LEADER_GRAVITY)
     this.leader.setAccelerationY(active ? 0 : DROP_ACCELERATION)
     if (active) {
@@ -129,10 +145,6 @@ export class Horde {
   }
 
   update(runPathX: number): void {
-    if (!this.flightActive && this.hoverHeld && this.leader.y <= HOVER_CEILING_Y) {
-      this.holdAtHoverCeiling()
-    }
-
     while (runPathX >= this.nextHistorySampleX) {
       const point = this.history[this.historyWriteIndex]
       point.pathX = this.nextHistorySampleX
@@ -204,11 +216,10 @@ export class Horde {
     let removed = 0
     for (let index = this.followers.length - 1; index >= 0; index -= 1) {
       const follower = this.followers[index]
-      const followerLeft = follower.x - follower.displayWidth * follower.originX
-      const followerRight = followerLeft + follower.displayWidth
-      const isInsidePit = followerRight > pitLeft && followerLeft < pitRight
+      const isInsidePit = follower.x > pitLeft && follower.x < pitRight
       const isGrounded =
-        follower.y + follower.displayHeight / 2 >= GROUND_Y - PIT_GROUNDED_TOLERANCE
+        follower.y + follower.displayHeight * (1 - follower.originY) >=
+        GROUND_Y - PIT_GROUNDED_TOLERANCE
       if (!isInsidePit || !isGrounded) {
         continue
       }
@@ -220,14 +231,23 @@ export class Horde {
       removed += 1
     }
 
-    const leaderBody = this.body
-    const leaderInsidePit = leaderBody.right > pitLeft && leaderBody.left < pitRight
-    const leaderIsLow = leaderBody.bottom >= GROUND_Y - PIT_GROUNDED_TOLERANCE
+    const leaderInsidePit = this.leader.x > pitLeft && this.leader.x < pitRight
+    const leaderFootY =
+      this.leader.y + this.leader.displayHeight * (1 - this.leader.originY)
+    const leaderIsLow = leaderFootY >= GROUND_Y - PIT_GROUNDED_TOLERANCE
     const leaderCaught = includeLeader && leaderInsidePit && leaderIsLow
     if (leaderCaught && this.population > 0) {
       this.createFallingZombie(this.leader, TEXTURES.LEADER, pitX, removed)
       this.population -= 1
       removed += 1
+
+      const targetFollowers = Math.min(
+        MAX_VISIBLE_FOLLOWERS,
+        Math.max(0, this.population - 1),
+      )
+      while (this.followers.length > targetFollowers) {
+        this.followers.shift()?.destroy()
+      }
     }
 
     if (this.population === 0) {
@@ -255,13 +275,11 @@ export class Horde {
     return this.leader.body as Phaser.Physics.Arcade.Body
   }
 
-  private holdAtHoverCeiling(): void {
+  private startFastDrop(): void {
     const body = this.body
-    if (this.leader.y < HOVER_CEILING_Y) {
-      body.reset(this.leader.x, HOVER_CEILING_Y)
-    }
     body.setGravityY(LEADER_GRAVITY)
-    this.leader.setVelocity(this.forwardSpeed, 0).setAccelerationY(-LEADER_GRAVITY)
+    this.leader.setAccelerationY(DROP_ACCELERATION)
+    body.velocity.y = Phaser.Math.Clamp(Math.max(body.velocity.y, 35), 35, MAX_FALL_SPEED)
   }
 
   private createFallingZombie(
