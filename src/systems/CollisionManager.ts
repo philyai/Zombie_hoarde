@@ -12,35 +12,42 @@ import { Obstacle } from '../entities/Obstacle'
 import { Powerup } from '../entities/Powerup'
 import type { ChunkSpawner } from './ChunkSpawner'
 import { ScoreManager } from './ScoreManager'
+import { feedback } from './Feedback'
+import { audio } from './AudioManager'
+import { saveManager } from './SaveManager'
+import type { PowerupKind } from '../entities/Powerup'
+import type { PowerupManager } from './PowerupManager'
 
 interface CollisionCallbacks {
   onPopulationChanged: (count: number) => void
   onDamage: (removed: number) => void
   onFenceSmashed: () => void
-  onFlightCollected: () => void
+  onFlightCollected: (kind: PowerupKind) => void
+  onMission: (title: string) => void
 }
 
 export class CollisionManager {
   private readonly colliders: Phaser.Physics.Arcade.Collider[] = []
 
   constructor(
-    scene: Phaser.Scene,
+    private readonly scene: Phaser.Scene,
     private readonly horde: Horde,
     private readonly spawner: ChunkSpawner,
     private readonly score: ScoreManager,
     private readonly callbacks: CollisionCallbacks,
+    private readonly powers: PowerupManager,
   ) {
     this.colliders.push(
-      scene.physics.add.collider(horde.leader, spawner.groundGroup),
-      scene.physics.add.overlap(horde.leader, spawner.civilianGroup, this.handleCivilian),
-      scene.physics.add.overlap(horde.leader, spawner.coinGroup, this.handleCoin),
-      scene.physics.add.overlap(horde.leader, spawner.powerupGroup, this.handlePowerup),
-      scene.physics.add.overlap(horde.leader, spawner.obstacleGroup, this.handleObstacle),
+      scene.physics.add.collider(horde.group, spawner.groundGroup),
+      scene.physics.add.overlap(horde.group, spawner.civilianGroup, this.handleCivilian),
+      scene.physics.add.overlap(horde.group, spawner.coinGroup, this.handleCoin),
+      scene.physics.add.overlap(horde.group, spawner.powerupGroup, this.handlePowerup),
+      scene.physics.add.overlap(horde.group, spawner.obstacleGroup, this.handleObstacle),
     )
   }
 
   updateFlightCollection(): void {
-    if (!this.horde.isFlightActive) {
+    if (!this.horde.isFlightActive || !this.horde.count) {
       return
     }
 
@@ -143,8 +150,8 @@ export class CollisionManager {
     object2,
   ) => {
     const powerup = object1 instanceof Powerup ? object1 : object2 instanceof Powerup ? object2 : null
-    if (powerup?.consume()) {
-      this.callbacks.onFlightCollected()
+    if (this.horde.count && powerup?.consume()) {
+      this.callbacks.onFlightCollected(powerup.kind)
     }
   }
 
@@ -162,7 +169,7 @@ export class CollisionManager {
   }
 
   private resolveObstacle(obstacle: Obstacle): void {
-    if (obstacle.isSpent) {
+    if (obstacle.isSpent || this.horde.count === 0) {
       return
     }
 
@@ -172,9 +179,21 @@ export class CollisionManager {
     }
 
     const leaderBody = this.horde.leader.body as Phaser.Physics.Arcade.Body
-    if (obstacle.isSmashable && leaderBody.velocity.y >= DIVE_THRESHOLD) {
+    const enoughHorde = obstacle.requirement > 0 && this.horde.count * (this.powers.has('giant') ? 2 : 1) >= obstacle.requirement
+    if (this.powers.has('rage') || enoughHorde || (obstacle.kind === 'fence' && leaderBody.velocity.y >= DIVE_THRESHOLD)) {
       obstacle.markSpent(true)
-      this.score.addBonus(25)
+      this.score.addBonus(obstacle.requirement ? 100 : 25)
+      const fx = feedback(this.scene)
+      fx.burst(obstacle.x, obstacle.y - 12, 0xdab57d, 18)
+      fx.popup(obstacle.x, obstacle.y - 38, '+100 SMASH', 0xf2d58b)
+      const wreck = this.scene.add.image(obstacle.x, obstacle.y - 10, obstacle.texture.key).setDepth(15)
+      this.scene.tweens.add({targets:wreck,y:obstacle.y-40,x:obstacle.x+35,angle:170,alpha:0,duration:550,onComplete:()=>wreck.destroy()})
+      audio.play('smash')
+      if (obstacle.requirement >= 3) {
+        this.horde.addZombie(); this.score.recordAbsorption(this.horde.count)
+        this.progress('vehicles'); this.progress('infected')
+        this.callbacks.onPopulationChanged(this.horde.count)
+      }
       this.callbacks.onFenceSmashed()
       return
     }
@@ -193,26 +212,36 @@ export class CollisionManager {
       MIN_DAMAGE,
       this.horde.count,
     )
-    const removed = this.horde.removeZombies(damage)
+    const removed = this.horde.removeZombies(damage, obstacle.kind === 'electric' ? 'electric' : 'hit')
     this.score.setHorde(this.horde.count)
     this.callbacks.onDamage(removed)
     this.callbacks.onPopulationChanged(this.horde.count)
   }
 
   private collectCivilian(civilian: Civilian): void {
-    if (!civilian.consume()) {
+    if (!this.horde.count || !civilian.consume()) {
       return
     }
     const count = this.horde.addZombie()
     this.score.recordAbsorption(count)
+    feedback(this.scene).burst(civilian.x, civilian.y - 12, 0xb2d87f)
+    feedback(this.scene).popup(civilian.x, civilian.y - 32, '+1 FRIEND')
+    const bite = this.scene.add.image(civilian.x, civilian.y - 14, 'z0-bite').setDepth(40)
+    this.scene.tweens.add({ targets: bite, y: bite.y - 8, alpha: 0, duration: 240, onComplete: () => bite.destroy() })
+    audio.play('convert'); this.progress('infected')
     this.callbacks.onPopulationChanged(count)
   }
 
   private collectCoin(coin: Phaser.Physics.Arcade.Image): void {
-    if (!coin.active) {
+    if (!coin.active || !this.horde.count) {
       return
     }
     coin.disableBody(true, true)
-    this.score.collectCoin()
+    const bonus = (this.score.coinPickups + 1) % 5 === 0 ? saveManager.load().upgrades.coins : 0
+    this.score.collectCoin((this.powers.has('boost') ? 2 : 1) + bonus)
+    feedback(this.scene).burst(coin.x, coin.y, 0xf5d77b, 4)
+    audio.play('coin'); this.progress('coins')
   }
+
+  private progress(id: string): void { for (const title of saveManager.progress(id)) this.callbacks.onMission(title) }
 }

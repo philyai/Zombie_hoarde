@@ -5,6 +5,7 @@ import { BootScene } from './scenes/BootScene'
 import { GameOverScene } from './scenes/GameOverScene'
 import { GameScene } from './scenes/GameScene'
 import { MenuScene } from './scenes/MenuScene'
+import { saveManager } from './systems/SaveManager'
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -24,9 +25,11 @@ const config: Phaser.Types.Core.GameConfig = {
     arcade: {
       gravity: { x: 0, y: 0 },
       debug: false,
+      customUpdate: true,
     },
   },
   scene: [BootScene, MenuScene, GameScene, GameOverScene],
 }
 
-new Phaser.Game(config)
+const game = new Phaser.Game(config)
+if (import.meta.env.DEV) Object.assign(window, { __GAME__: game, __SAVE__: saveManager })

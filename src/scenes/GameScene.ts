@@ -1,395 +1,191 @@
 import Phaser from 'phaser'
-import {
-  CAMERA_FOLLOW_X,
-  COLORS,
-  CRITICAL_MASS_SIZE,
-  FLIGHT_DURATION_MS,
-  GAME_HEIGHT,
-  GAME_WORLD_WIDTH,
-  GAME_WIDTH,
-  MAX_SPEED,
-  SCENES,
-  SPEED_ACCELERATION,
-  START_SPEED,
-  type GameOverData,
-} from '../config/GameConfig'
+import { CAMERA_FOLLOW_X, CRITICAL_MASS_SIZE, GAME_HEIGHT, GAME_WORLD_WIDTH, MAX_SPEED, SCENES, SPEED_ACCELERATION, START_SPEED } from '../config/GameConfig'
 import { Horde } from '../entities/Horde'
 import { ChunkSpawner } from '../systems/ChunkSpawner'
 import { CollisionManager } from '../systems/CollisionManager'
-import { SaveManager, saveManager } from '../systems/SaveManager'
+import { saveManager } from '../systems/SaveManager'
 import { ScoreManager } from '../systems/ScoreManager'
+import { PowerupManager } from '../systems/PowerupManager'
+import { audio } from '../systems/AudioManager'
+import { feedback } from '../systems/Feedback'
+import { CityWorld } from '../art/CityWorld'
+import { button, GREEN, keyboardNavigation, panel, pixelText } from '../ui/PixelUI'
 
+export type RunState='playing'|'paused'|'dying'|'results'
 export class GameScene extends Phaser.Scene {
-  private horde!: Horde
-  private spawner!: ChunkSpawner
-  private collisions!: CollisionManager
-  private score!: ScoreManager
-  private readonly saves: SaveManager = saveManager
-
-  private scoreText!: Phaser.GameObjects.Text
-  private coinsText!: Phaser.GameObjects.Text
-  private hordeText!: Phaser.GameObjects.Text
-  private flightText!: Phaser.GameObjects.Text
-  private flightBar!: Phaser.GameObjects.Graphics
-  private pauseOverlay: Phaser.GameObjects.GameObject[] = []
-
-  private upKey?: Phaser.Input.Keyboard.Key
-  private spaceKey?: Phaser.Input.Keyboard.Key
-  private pauseKey?: Phaser.Input.Keyboard.Key
-  private escapeKey?: Phaser.Input.Keyboard.Key
-  private worldSpeed = START_SPEED
-  private flightRemainingMs = 0
-  private criticalMassTriggered = false
-  private isPaused = false
-  private isEnding = false
-  private shutdownComplete = false
-
-  constructor() {
-    super(SCENES.GAME)
+  horde!:Horde
+  spawner!:ChunkSpawner
+  collisions!:CollisionManager
+  score!:ScoreManager
+  powers!:PowerupManager
+  state:RunState='playing'
+  elapsed=0
+  private world!:CityWorld
+  private worldSpeed=START_SPEED
+  private deathElapsed=0
+  private criticalMassTriggered=false
+  private pointerHeld=false
+  private jumpQueued=false
+  private inputBlocked=true
+  private space?:Phaser.Input.Keyboard.Key
+  private up?:Phaser.Input.Keyboard.Key
+  private overlay:Phaser.GameObjects.GameObject[]=[]
+  private buttons:Phaser.GameObjects.Container[]=[]
+  private scoreText!:Phaser.GameObjects.BitmapText
+  private coinsText!:Phaser.GameObjects.BitmapText
+  private hordeText!:Phaser.GameObjects.BitmapText
+  private tutorial!:Phaser.GameObjects.BitmapText
+  private banner!:Phaser.GameObjects.BitmapText
+  private powerText!:Phaser.GameObjects.BitmapText
+  private powerBar!:Phaser.GameObjects.Graphics
+  private powerIcons:Phaser.GameObjects.Image[]=[]
+  private debugText?:Phaser.GameObjects.BitmapText
+  private lastCoins=-1
+  private lastHorde=-1
+  private bannerRemaining=0
+  private banked=false
+  constructor(){super(SCENES.GAME)}
+  create():void{
+    this.state='playing';this.elapsed=0;this.deathElapsed=0;this.worldSpeed=START_SPEED
+    this.criticalMassTriggered=false;this.pointerHeld=false;this.jumpQueued=false;this.inputBlocked=true;this.overlay=[];this.buttons=[]
+    this.lastCoins=-1;this.lastHorde=-1;this.banked=false;this.bannerRemaining=0
+    this.time.paused=false;this.tweens.resumeAll();this.physics.resume()
+    this.physics.world.setBounds(0,0,GAME_WORLD_WIDTH,GAME_HEIGHT+100)
+    this.cameras.main.setScroll(0,0);this.world=new CityWorld(this)
+    this.score=new ScoreManager();this.horde=new Horde(this,1+saveManager.load().upgrades.starting);this.score.setHorde(this.horde.count)
+    this.spawner=new ChunkSpawner(this,()=>this.horde.isFlightActive)
+    this.powers=new PowerupManager(this,this.horde)
+    this.collisions=new CollisionManager(this,this.horde,this.spawner,this.score,{
+      onPopulationChanged:()=>this.populationChanged(),
+      onDamage:removed=>{if(removed){feedback(this).shake(.004);this.hordeText?.setTint(0xef9b80);this.time.delayedCall(220,()=>this.hordeText?.setTint(GREEN))}},
+      onFenceSmashed:()=>feedback(this).shake(),
+      onFlightCollected:kind=>this.powers.activate(kind),
+      onMission:title=>{this.showBanner(`MISSION COMPLETE: ${title}`);audio.play('mission')},
+    },this.powers)
+    this.space=this.input.keyboard?.addKey('SPACE');this.up=this.input.keyboard?.addKey('UP')
+    this.input.on('pointerdown',this.pointerDown,this);this.input.on('pointerup',this.pointerUp,this)
+    this.input.on('pointerupoutside',this.pointerUp,this)
+    this.input.keyboard?.on('keydown-ESC',this.togglePause,this);this.input.keyboard?.on('keydown-P',this.togglePause,this)
+    this.input.keyboard?.on('keydown-SPACE',this.queueJump,this);this.input.keyboard?.on('keydown-UP',this.queueJump,this)
+    this.game.events.on('blur',this.focusLost,this)
+    this.createHud();keyboardNavigation(this,()=>this.state==='paused'?this.buttons:[])
+    if(import.meta.env.DEV&&new URLSearchParams(location.search).has('debug')){
+      this.debugText=pixelText(this,8,246,'',8).setDepth(600).setScrollFactor(0)
+      this.physics.world.createDebugGraphic();this.physics.world.drawDebug=true
+    }else this.physics.world.drawDebug=false
+    this.events.once('shutdown',this.shutdown,this)
+    this.cameras.main.fadeIn(150,15,29,35)
   }
-
-  create(): void {
-    this.resetRunState()
-    this.physics.resume()
-    this.physics.world.setBounds(0, 0, GAME_WORLD_WIDTH, GAME_HEIGHT)
-    this.physics.world.setBoundsCollision(true, true, true, true)
-    this.cameras.main.setBackgroundColor(COLORS.SKY)
-    this.cameras.main.setScroll(0, 0)
-    this.createBackdrop()
-
-    this.score = new ScoreManager()
-    this.horde = new Horde(this)
-    this.spawner = new ChunkSpawner(this, () => this.horde.isFlightActive)
-    this.collisions = new CollisionManager(this, this.horde, this.spawner, this.score, {
-      onPopulationChanged: (count) => this.handlePopulationChanged(count),
-      onDamage: (removed) => this.handleDamage(removed),
-      onFenceSmashed: () => this.handleFenceSmashed(),
-      onFlightCollected: () => this.activateFlight(),
-    })
-
-    this.upKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
-    this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-    this.pauseKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.P)
-    this.escapeKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
-    this.createHud()
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this)
-  }
-
-  update(_time: number, delta: number): void {
-    if (this.isEnding) {
+  private queueJump(event?:KeyboardEvent):void{if(this.state==='playing'&&!event?.repeat&&!this.inputBlocked)this.jumpQueued=true}
+  private pointerDown():void{if(this.state==='playing'){audio.unlock();this.pointerHeld=true;this.queueJump()}}
+  private pointerUp():void{this.pointerHeld=false}
+  private focusLost():void{if(this.state==='playing')this.pauseGame()}
+  private togglePause(event?:KeyboardEvent):void{if(event?.repeat)return;if(this.state==='playing')this.pauseGame();else if(this.state==='paused')this.resumeGame()}
+  update(_time:number,rawDelta:number):void{
+    const delta=Math.min(rawDelta,50)
+    if(this.state==='paused'||this.state==='results')return
+    feedback(this).update(delta)
+    if(this.state==='dying'){
+      this.deathElapsed+=delta
+      if(this.deathElapsed>=850){this.state='results';this.bankRun();this.scene.start(SCENES.GAME_OVER,{...this.score.summary(),isNewBest:this.score.score>this.bestBefore})}
       return
     }
-
-    const pausePressed =
-      (this.pauseKey ? Phaser.Input.Keyboard.JustDown(this.pauseKey) : false) ||
-      (this.escapeKey ? Phaser.Input.Keyboard.JustDown(this.escapeKey) : false)
-    if (pausePressed) {
-      if (this.isPaused) {
-        this.resumeGame()
-      } else {
-        this.pauseGame()
-      }
-      return
-    }
-
-    if (this.isPaused) {
-      return
-    }
-
-    const deltaSeconds = delta / 1000
-    this.worldSpeed = Math.min(MAX_SPEED, this.worldSpeed + SPEED_ACCELERATION * deltaSeconds)
-    this.horde.setForwardSpeed(this.worldSpeed)
-
-    if (this.horde.isFlightActive) {
-      this.horde.updateFlight()
-    } else {
-      const isHeld =
-        this.input.activePointer.isDown ||
-        (this.upKey?.isDown ?? false) ||
-        (this.spaceKey?.isDown ?? false)
-      this.horde.applyInput(isHeld, delta)
-    }
-
-    const travel = this.worldSpeed * deltaSeconds
-    this.horde.update(this.horde.leader.x)
-    this.score.updateDistance(travel, this.horde.count)
-    this.cameras.main.scrollX = Math.max(0, this.horde.leader.x - CAMERA_FOLLOW_X)
-    this.spawner.update(this.cameras.main.scrollX, this.score.distance)
-    this.collisions.updatePitFalls()
-    this.collisions.updateFlightCollection()
-    this.updateFlight(delta)
-    this.updateHud()
-
-    if (this.horde.count === 0) {
-      this.finishRun()
-    }
+    this.elapsed+=delta;this.worldSpeed=Math.min(MAX_SPEED,this.worldSpeed+SPEED_ACCELERATION*delta/1000)
+    let held=this.pointerHeld||!!this.space?.isDown||!!this.up?.isDown
+    if(this.inputBlocked){if(!held)this.inputBlocked=false;held=false}
+    this.horde.setForwardSpeed(this.worldSpeed);this.horde.applyInput(held,delta,this.jumpQueued);this.jumpQueued=false;this.horde.update(this.horde.leader.x)
+    // One bounded delta drives both physics and game timers, including low-frame-rate play.
+    this.physics.world.update(_time,delta)
+    this.score.updateDistance(this.worldSpeed*delta/1000,this.horde.count)
+    this.cameras.main.scrollX=Math.max(this.cameras.main.scrollX,this.horde.leader.x-CAMERA_FOLLOW_X,0)
+    this.world.update(this.cameras.main.scrollX,this.elapsed)
+    this.spawner.update(this.cameras.main.scrollX,this.score.distance,delta,this.horde.leader.x)
+    this.powers.update(delta,this.spawner);this.collisions.updatePitFalls();this.collisions.updateFlightCollection()
+    // A fall beyond the pit volume remains lethal; no world-bottom platform.
+    for(const sprite of [...this.horde.sprites])if(sprite.y>GAME_HEIGHT+20)this.horde.removeMember(sprite,'pit')
+    this.score.setHorde(this.horde.count)
+    this.updateHud(delta);audio.music(this.elapsed)
+    if(!this.horde.count)this.finishRun()
   }
-
-  private resetRunState(): void {
-    this.worldSpeed = START_SPEED
-    this.flightRemainingMs = 0
-    this.criticalMassTriggered = false
-    this.isPaused = false
-    this.isEnding = false
-    this.shutdownComplete = false
+  private createHud():void{
+    this.add.rectangle(0,0,480,34,0x122b34,.9).setOrigin(0).setScrollFactor(0).setDepth(100)
+    this.scoreText=pixelText(this,10,7,'SCORE 0',8).setDepth(101).setScrollFactor(0)
+    this.add.image(243,15,'coin0').setDepth(101).setScrollFactor(0)
+    this.coinsText=pixelText(this,255,11,'0',8,0xf0cc81).setDepth(101).setScrollFactor(0)
+    this.add.image(352,17,'z0-idle').setDepth(101).setScrollFactor(0)
+    this.hordeText=pixelText(this,366,11,`HORDE ${this.horde.count}`,8,GREEN).setDepth(101).setScrollFactor(0)
+    button(this,458,16,32,'II',()=>this.pauseGame())
+    this.tutorial=pixelText(this,240,57,'TAP / SPACE: JUMP. HOLD: GO HIGHER.',8).setOrigin(.5).setDepth(100).setScrollFactor(0)
+    this.banner=pixelText(this,240,76,'',8,GREEN).setOrigin(.5).setDepth(110).setScrollFactor(0)
+    this.powerText=pixelText(this,32,42,'',8,0xf3d48f).setLineSpacing(11).setDepth(101).setScrollFactor(0)
+    this.powerBar=this.add.graphics().setDepth(101).setScrollFactor(0)
+    this.powerIcons=Array.from({length:5},(_,i)=>this.add.image(18,46+i*20,'power-flight').setVisible(false).setDepth(101).setScrollFactor(0))
   }
-
-  private createBackdrop(): void {
-    this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, COLORS.SKY)
-      .setScrollFactor(0)
-    this.add.circle(324, 42, 18, 0xd9e0c7, 0.22).setScrollFactor(0)
-    this.add
-      .rectangle(GAME_WIDTH / 2, 163, GAME_WIDTH, 42, COLORS.SKY_ACCENT)
-      .setScrollFactor(0)
-
-    const skyline = this.add.graphics().setDepth(1).setScrollFactor(0)
-    skyline.fillStyle(0x0b1114, 1)
-    const buildings = [
-      [0, 143, 42, 41],
-      [48, 151, 29, 33],
-      [84, 136, 50, 48],
-      [143, 148, 36, 36],
-      [190, 132, 46, 52],
-      [244, 146, 25, 38],
-      [278, 138, 42, 46],
-      [330, 150, 54, 34],
+  private updateHud(delta:number):void{
+    this.scoreText.setText(`SCORE ${this.score.score}\n${Math.floor(this.score.distance)} M  /  ${this.spawner.difficulty.toUpperCase()}`)
+    this.coinsText.setText(`${this.score.runCoins}`);this.hordeText.setText(`HORDE ${this.horde.count}`)
+    if(this.lastCoins>=0&&this.lastCoins!==this.score.runCoins)this.pulse(this.coinsText)
+    if(this.lastHorde>=0&&this.lastHorde!==this.horde.count)this.pulse(this.hordeText)
+    this.lastCoins=this.score.runCoins;this.lastHorde=this.horde.count
+    const messages=this.elapsed<4200?'TAP / SPACE: JUMP. HOLD: GO HIGHER.':this.elapsed<9500?'JUMP THE GAP. FOLLOW THE COINS.':this.elapsed<16000?'3 ZOMBIES CAN SMASH A CAR.':this.elapsed<22000?'COLLECT SUPPLIES FOR A POWER-UP.':''
+    this.tutorial.setText(messages)
+    this.bannerRemaining-=delta;if(this.bannerRemaining<=0)this.banner.setText('')
+    this.powerBar.clear();const lines:string[]=[]
+    this.powerIcons.forEach(icon=>icon.setVisible(false))
+    let i=0
+    for(const [kind,power] of this.powers.active){lines.push(`${kind.toUpperCase()} ${Math.ceil(power.remaining/1000)}S`);this.powerIcons[i].setTexture(`power-${kind}`).setVisible(true);this.powerBar.fillStyle(0x45605a).fillRect(99,43+i*20,40,4).fillStyle(0xc5d889).fillRect(99,43+i*20,Math.ceil(40*power.remaining/power.duration),4);i++}
+    this.powerText.setText(lines.join('\n'))
+    this.debugText?.setText(`FPS ${Math.round(this.game.loop.actualFps)} VY ${Math.round((this.horde.leader.body as Phaser.Physics.Arcade.Body).velocity.y)} HORDE ${this.horde.count}\n${this.spawner.currentChunk}  SPEED ${Math.round(this.worldSpeed)}  OBJECTS ${this.children.length}`)
+  }
+  private pulse(text:Phaser.GameObjects.BitmapText):void{this.tweens.killTweensOf(text);text.setAlpha(.45);this.tweens.add({targets:text,alpha:1,duration:180})}
+  private populationChanged():void{
+    if(this.horde.count>=CRITICAL_MASS_SIZE&&!this.criticalMassTriggered){this.criticalMassTriggered=true;this.score.addBonus(500);this.showBanner('CRITICAL MASS! +500');feedback(this).shake()}
+  }
+  private showBanner(text:string):void{this.banner?.setText(text);this.bannerRemaining=2500}
+  pauseGame():void{
+    if(this.state!=='playing')return
+    this.state='paused';this.physics.pause();this.time.paused=true;this.tweens.pauseAll();this.horde.releaseInput();this.pointerHeld=false;this.jumpQueued=false
+    this.showPause()
+  }
+  resumeGame():void{
+    if(this.state!=='paused')return
+    this.clearOverlay();this.physics.resume();this.time.paused=false;this.tweens.resumeAll();this.state='playing';this.inputBlocked=true;this.pointerHeld=false
+  }
+  private showPause(settings=false):void{
+    this.clearOverlay()
+    const before=new Set(this.children.list)
+    this.add.rectangle(240,135,480,270,0x091a21,.35).setDepth(499).setScrollFactor(0).setInteractive()
+    panel(this,240,142,206,166)
+    pixelText(this,240,75,settings?'SETTINGS':'PAUSED',16,GREEN).setOrigin(.5).setDepth(501).setScrollFactor(0)
+    const rows:{label:string;action:()=>void}[]=settings?(['sound','music','shake'] as const).map(key=>({label:`${key.toUpperCase()}: ${saveManager.load().settings[key]?'ON':'OFF'}`,action:()=>{const d=saveManager.load();d.settings[key]=!d.settings[key];saveManager.save(d);this.showPause(true)}})):[
+      {label:'RESUME',action:()=>this.resumeGame()},
+      {label:'RESTART',action:()=>{this.bankRun();this.scene.restart()}},
+      {label:'SETTINGS',action:()=>this.showPause(true)},
     ]
-    for (const [x, y, width, height] of buildings) {
-      skyline.fillRect(x, y, width, height)
-    }
+    rows.push({label:settings?'BACK':'MAIN MENU',action:()=>{if(settings)this.showPause();else{this.bankRun();this.scene.start(SCENES.MENU)}}})
+    this.buttons=rows.map((r,i)=>button(this,240,103+i*34,166,r.label,r.action,i===0&&!settings))
+    this.overlay=this.children.list.filter(o=>!before.has(o))
   }
-
-  private createHud(): void {
-    const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-      color: COLORS.TEXT,
-      fontFamily: 'monospace',
-      fontSize: '10px',
-      fontStyle: 'bold',
-    }
-
-    this.scoreText = this.add.text(7, 6, 'SCORE 0', textStyle).setDepth(100).setScrollFactor(0)
-    this.coinsText = this.add.text(143, 6, 'COINS 0', textStyle).setDepth(100).setScrollFactor(0)
-    this.hordeText = this.add.text(283, 6, 'HORDE 1', textStyle).setDepth(100).setScrollFactor(0)
-    this.flightText = this.add
-      .text(7, 22, 'FLIGHT', { ...textStyle, color: '#ffb29b' })
-      .setDepth(100)
-      .setScrollFactor(0)
-      .setVisible(false)
-    this.flightBar = this.add.graphics().setDepth(100).setScrollFactor(0)
-
-    const pauseButton = this.add
-      .rectangle(GAME_WIDTH - 14, 28, 22, 18, 0x283a32, 0.95)
-      .setStrokeStyle(1, 0x7bbf72)
-      .setDepth(110)
-      .setScrollFactor(0)
-      .setInteractive({ useHandCursor: true })
-    this.add
-      .text(GAME_WIDTH - 14, 28, 'II', {
-        color: COLORS.TEXT,
-        fontFamily: 'monospace',
-        fontSize: '10px',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setDepth(111)
-      .setScrollFactor(0)
-    pauseButton.on('pointerover', () => pauseButton.setFillStyle(0x3f5d4a, 1))
-    pauseButton.on('pointerout', () => pauseButton.setFillStyle(0x283a32, 0.95))
-    pauseButton.on('pointerdown', () => this.pauseGame())
+  private clearOverlay():void{this.overlay.forEach(o=>o.destroy());this.overlay=[];this.buttons=[]}
+  private bestBefore=0
+  private bankRun():void{
+    if(this.banked)return;this.banked=true
+    this.bestBefore=saveManager.load().bestScore
+    saveManager.addCoins(this.score.runCoins);saveManager.updateBest(this.score.score,this.score.distance)
+    const data=saveManager.load();data.tutorialSeen=true;saveManager.save(data)
   }
-
-  private pauseGame(): void {
-    if (this.isPaused || this.isEnding) {
-      return
-    }
-
-    this.isPaused = true
-    this.physics.pause()
-    this.tweens.pauseAll()
-    this.pauseOverlay = this.createPauseOverlay()
+  finishRun():void{
+    if(this.state!=='playing')return
+    this.state='dying';this.physics.pause();this.pointerHeld=false;this.deathElapsed=0
+    this.tutorial.setText('');audio.play('death');feedback(this).shake(.005)
   }
-
-  private resumeGame(): void {
-    if (!this.isPaused || this.isEnding) {
-      return
-    }
-
-    this.destroyPauseOverlay()
-    this.tweens.resumeAll()
-    this.physics.resume()
-    this.isPaused = false
-  }
-
-  private createPauseOverlay(): Phaser.GameObjects.GameObject[] {
-    const overlay: Phaser.GameObjects.GameObject[] = []
-    const blocker = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x06090a, 0.82)
-      .setDepth(500)
-      .setScrollFactor(0)
-      .setInteractive()
-    const panel = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 190, 124, 0x17211d, 1)
-      .setStrokeStyle(2, 0x6ca665)
-      .setDepth(501)
-      .setScrollFactor(0)
-    const title = this.add
-      .text(GAME_WIDTH / 2, 72, 'PAUSED', {
-        color: COLORS.TEXT,
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setDepth(502)
-      .setScrollFactor(0)
-
-    overlay.push(blocker, panel, title)
-    this.addPauseOverlayButton(overlay, GAME_WIDTH / 2, 112, 'RESUME', () => this.resumeGame())
-    this.addPauseOverlayButton(overlay, GAME_WIDTH / 2, 147, 'MENU', () => {
-      this.scene.start(SCENES.MENU)
-    })
-    return overlay
-  }
-
-  private addPauseOverlayButton(
-    overlay: Phaser.GameObjects.GameObject[],
-    x: number,
-    y: number,
-    label: string,
-    action: () => void,
-  ): void {
-    const button = this.add
-      .rectangle(x, y, 104, 26, 0x3a5548)
-      .setStrokeStyle(1, 0x7bbf72)
-      .setDepth(503)
-      .setScrollFactor(0)
-      .setInteractive({ useHandCursor: true })
-    const text = this.add
-      .text(x, y, label, {
-        color: COLORS.TEXT,
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setDepth(504)
-      .setScrollFactor(0)
-
-    button.on('pointerover', () => button.setFillStyle(0x4a6e56))
-    button.on('pointerout', () => button.setFillStyle(0x3a5548))
-    button.on('pointerdown', action)
-    overlay.push(button, text)
-  }
-
-  private destroyPauseOverlay(): void {
-    for (const object of this.pauseOverlay) {
-      object.destroy()
-    }
-    this.pauseOverlay.length = 0
-  }
-
-  private updateHud(): void {
-    this.scoreText.setText(`SCORE ${this.score.score}`)
-    this.coinsText.setText(`COINS ${this.score.runCoins}`)
-    this.hordeText.setText(`HORDE ${this.horde.count}`)
-
-    const flightActive = this.flightRemainingMs > 0
-    this.flightText.setVisible(flightActive)
-    this.flightBar.clear()
-    if (flightActive) {
-      const ratio = Phaser.Math.Clamp(this.flightRemainingMs / FLIGHT_DURATION_MS, 0, 1)
-      this.flightBar.fillStyle(0x283134, 0.9).fillRect(48, 23, 58, 6)
-      this.flightBar.fillStyle(COLORS.FLIGHT, 1).fillRect(49, 24, 56 * ratio, 4)
-    }
-  }
-
-  private activateFlight(): void {
-    this.flightRemainingMs = FLIGHT_DURATION_MS
-    this.horde.setFlightActive(true)
-    this.cameras.main.flash(120, 255, 156, 105, false)
-  }
-
-  private updateFlight(delta: number): void {
-    if (this.flightRemainingMs <= 0) {
-      return
-    }
-
-    this.flightRemainingMs = Math.max(0, this.flightRemainingMs - delta)
-    if (this.flightRemainingMs === 0) {
-      this.horde.setFlightActive(false)
-    }
-  }
-
-  private handlePopulationChanged(count: number): void {
-    if (!this.criticalMassTriggered && count >= CRITICAL_MASS_SIZE) {
-      this.criticalMassTriggered = true
-      this.score.addBonus(500)
-      this.cameras.main.flash(220, 130, 255, 115, false)
-      this.cameras.main.shake(220, 0.004)
-      const message = this.add
-        .text(GAME_WIDTH / 2, 67, 'CRITICAL MASS +500', {
-          color: '#d7ff9c',
-          fontFamily: 'monospace',
-          fontSize: '15px',
-          fontStyle: 'bold',
-        })
-        .setOrigin(0.5)
-        .setDepth(200)
-        .setScrollFactor(0)
-
-      this.tweens.add({
-        targets: message,
-        y: 51,
-        alpha: 0,
-        duration: 900,
-        ease: 'Quad.easeOut',
-        onComplete: () => message.destroy(),
-      })
-    }
-  }
-
-  private handleDamage(removed: number): void {
-    if (removed <= 0) {
-      return
-    }
-    this.cameras.main.shake(130, 0.007)
-    this.cameras.main.flash(80, 170, 35, 35, false)
-  }
-
-  private handleFenceSmashed(): void {
-    this.cameras.main.shake(80, 0.003)
-  }
-
-  private finishRun(): void {
-    if (this.isEnding) {
-      return
-    }
-    this.isEnding = true
-    this.physics.pause()
-    this.horde.setFlightActive(false)
-
-    const summary = this.score.summary()
-    this.saves.addCoins(summary.runCoins)
-    const isNewBest = this.saves.updateBest(summary.score, summary.distance)
-    const result: GameOverData = { ...summary, isNewBest }
-    this.scene.start(SCENES.GAME_OVER, result)
-  }
-
-  private shutdown(): void {
-    if (this.shutdownComplete) {
-      return
-    }
-    this.shutdownComplete = true
-    this.time.removeAllEvents()
-    this.tweens.killAll()
-    this.destroyPauseOverlay()
-    this.collisions?.destroy()
-    this.spawner?.destroy()
-    this.horde?.destroy()
-    this.upKey = undefined
-    this.spaceKey = undefined
-    this.pauseKey = undefined
-    this.escapeKey = undefined
+  private shutdown():void{
+    this.game.events.off('blur',this.focusLost,this)
+    this.input.off('pointerdown',this.pointerDown,this);this.input.off('pointerup',this.pointerUp,this);this.input.off('pointerupoutside',this.pointerUp,this)
+    this.input.keyboard?.off('keydown-ESC',this.togglePause,this);this.input.keyboard?.off('keydown-P',this.togglePause,this)
+    this.input.keyboard?.off('keydown-SPACE',this.queueJump,this);this.input.keyboard?.off('keydown-UP',this.queueJump,this)
+    this.time.paused=false;this.time.removeAllEvents();this.tweens.killAll();this.clearOverlay()
+    this.collisions?.destroy();this.spawner?.destroy();this.horde?.destroy()
+    this.debugText=undefined
   }
 }
