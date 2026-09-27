@@ -21,17 +21,17 @@ export const TEXTURES = {
   GROUND: 'ground',
 } as const
 
-export const GAME_WIDTH = 384
-export const GAME_HEIGHT = 216
-export const GROUND_Y = 184
+export const GAME_WIDTH = 480
+export const GAME_HEIGHT = 270
+export const GROUND_Y = 224
 export const GROUND_HEIGHT = GAME_HEIGHT - GROUND_Y
-export const PLAYER_X = 74
-export const CAMERA_FOLLOW_X = 118
+export const PLAYER_X = 130
+export const CAMERA_FOLLOW_X = 145
 export const GAME_WORLD_WIDTH = 10_000_000
 
 export const START_SPEED = 66
-export const MAX_SPEED = 130
-export const SPEED_ACCELERATION = 1.8
+export const MAX_SPEED = 112
+export const SPEED_ACCELERATION = 0.65
 
 export const LEADER_GRAVITY = 450
 export const RISE_ACCELERATION = 1600
@@ -40,7 +40,7 @@ export const MAX_RISE_SPEED = 105
 export const MAX_FALL_SPEED = 210
 export const DIVE_THRESHOLD = 150
 export const HOVER_CEILING_Y = 98
-export const MAX_JUMP_HOLD_MS = 650
+export const MAX_JUMP_HOLD_MS = 220
 export const PIT_GROUNDED_TOLERANCE = 4
 
 export const HISTORY_SAMPLE_DISTANCE = 2
@@ -58,7 +58,7 @@ export const FLIGHT_CRUISE_Y = 82
 export const FLIGHT_COLLECTION_RADIUS = 68
 export const FLIGHT_MIN_DISTANCE = 60
 
-export const CHUNK_GAP = 16
+export const CHUNK_GAP = 0
 export const CHUNK_SPAWN_AHEAD = 90
 export const CLEANUP_X = -80
 
