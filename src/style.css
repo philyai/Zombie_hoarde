@@ -23,8 +23,7 @@ body {
 }
 
 #game {
-  display: grid;
-  place-items: center;
+  position: relative;
 }
 
 canvas {
