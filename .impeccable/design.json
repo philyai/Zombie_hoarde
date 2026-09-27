@@ -1,0 +1,409 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T16:33:06.426738+00:00",
+  "title": "Design System: Zombie Horde Runner",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.03007 217.45)",
+          "oklch(26.43% 0.03007 217.45)",
+          "oklch(37.86% 0.03007 217.45)",
+          "oklch(49.29% 0.03007 217.45)",
+          "oklch(60.71% 0.03007 217.45)",
+          "oklch(72.14% 0.03007 217.45)",
+          "oklch(83.57% 0.03007 217.45)",
+          "oklch(95.00% 0.03007 217.45)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.03989 100.90)",
+          "oklch(26.43% 0.03989 100.90)",
+          "oklch(37.86% 0.03989 100.90)",
+          "oklch(49.29% 0.03989 100.90)",
+          "oklch(60.71% 0.03989 100.90)",
+          "oklch(72.14% 0.03989 100.90)",
+          "oklch(83.57% 0.03989 100.90)",
+          "oklch(95.00% 0.03989 100.90)"
+        ]
+      },
+      "horde-green": {
+        "role": "primary",
+        "displayName": "Horde Green",
+        "tonalRamp": [
+          "oklch(15.00% 0.12483 126.01)",
+          "oklch(26.43% 0.12483 126.01)",
+          "oklch(37.86% 0.12483 126.01)",
+          "oklch(49.29% 0.12483 126.01)",
+          "oklch(60.71% 0.12483 126.01)",
+          "oklch(72.14% 0.12483 126.01)",
+          "oklch(83.57% 0.12483 126.01)",
+          "oklch(95.00% 0.12483 126.01)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.02781 155.79)",
+          "oklch(26.43% 0.02781 155.79)",
+          "oklch(37.86% 0.02781 155.79)",
+          "oklch(49.29% 0.02781 155.79)",
+          "oklch(60.71% 0.02781 155.79)",
+          "oklch(72.14% 0.02781 155.79)",
+          "oklch(83.57% 0.02781 155.79)",
+          "oklch(95.00% 0.02781 155.79)"
+        ]
+      },
+      "letterbox": {
+        "role": "neutral",
+        "displayName": "Letterbox",
+        "tonalRamp": [
+          "oklch(15.00% 0.00550 247.80)",
+          "oklch(26.43% 0.00550 247.80)",
+          "oklch(37.86% 0.00550 247.80)",
+          "oklch(49.29% 0.00550 247.80)",
+          "oklch(60.71% 0.00550 247.80)",
+          "oklch(72.14% 0.00550 247.80)",
+          "oklch(83.57% 0.00550 247.80)",
+          "oklch(95.00% 0.00550 247.80)"
+        ]
+      },
+      "dusk-sky": {
+        "role": "neutral",
+        "displayName": "Dusk Sky",
+        "tonalRamp": [
+          "oklch(15.00% 0.04089 229.58)",
+          "oklch(26.43% 0.04089 229.58)",
+          "oklch(37.86% 0.04089 229.58)",
+          "oklch(49.29% 0.04089 229.58)",
+          "oklch(60.71% 0.04089 229.58)",
+          "oklch(72.14% 0.04089 229.58)",
+          "oklch(83.57% 0.04089 229.58)",
+          "oklch(95.00% 0.04089 229.58)"
+        ]
+      },
+      "haze": {
+        "role": "neutral",
+        "displayName": "Haze",
+        "tonalRamp": [
+          "oklch(15.00% 0.02337 145.24)",
+          "oklch(26.43% 0.02337 145.24)",
+          "oklch(37.86% 0.02337 145.24)",
+          "oklch(49.29% 0.02337 145.24)",
+          "oklch(60.71% 0.02337 145.24)",
+          "oklch(72.14% 0.02337 145.24)",
+          "oklch(83.57% 0.02337 145.24)",
+          "oklch(95.00% 0.02337 145.24)"
+        ]
+      },
+      "skyline": {
+        "role": "neutral",
+        "displayName": "Skyline",
+        "tonalRamp": [
+          "oklch(15.00% 0.03252 210.85)",
+          "oklch(26.43% 0.03252 210.85)",
+          "oklch(37.86% 0.03252 210.85)",
+          "oklch(49.29% 0.03252 210.85)",
+          "oklch(60.71% 0.03252 210.85)",
+          "oklch(72.14% 0.03252 210.85)",
+          "oklch(83.57% 0.03252 210.85)",
+          "oklch(95.00% 0.03252 210.85)"
+        ]
+      },
+      "buildings": {
+        "role": "neutral",
+        "displayName": "Buildings",
+        "tonalRamp": [
+          "oklch(15.00% 0.03433 213.27)",
+          "oklch(26.43% 0.03433 213.27)",
+          "oklch(37.86% 0.03433 213.27)",
+          "oklch(49.29% 0.03433 213.27)",
+          "oklch(60.71% 0.03433 213.27)",
+          "oklch(72.14% 0.03433 213.27)",
+          "oklch(83.57% 0.03433 213.27)",
+          "oklch(95.00% 0.03433 213.27)"
+        ]
+      },
+      "lamp": {
+        "role": "secondary",
+        "displayName": "Lamp",
+        "tonalRamp": [
+          "oklch(15.00% 0.07709 87.81)",
+          "oklch(26.43% 0.07709 87.81)",
+          "oklch(37.86% 0.07709 87.81)",
+          "oklch(49.29% 0.07709 87.81)",
+          "oklch(60.71% 0.07709 87.81)",
+          "oklch(72.14% 0.07709 87.81)",
+          "oklch(83.57% 0.07709 87.81)",
+          "oklch(95.00% 0.07709 87.81)"
+        ]
+      },
+      "panel-edge": {
+        "role": "neutral",
+        "displayName": "Panel Edge",
+        "tonalRamp": [
+          "oklch(15.00% 0.03118 161.49)",
+          "oklch(26.43% 0.03118 161.49)",
+          "oklch(37.86% 0.03118 161.49)",
+          "oklch(49.29% 0.03118 161.49)",
+          "oklch(60.71% 0.03118 161.49)",
+          "oklch(72.14% 0.03118 161.49)",
+          "oklch(83.57% 0.03118 161.49)",
+          "oklch(95.00% 0.03118 161.49)"
+        ]
+      },
+      "panel-shadow": {
+        "role": "neutral",
+        "displayName": "Panel Shadow",
+        "tonalRamp": [
+          "oklch(15.00% 0.02749 225.75)",
+          "oklch(26.43% 0.02749 225.75)",
+          "oklch(37.86% 0.02749 225.75)",
+          "oklch(49.29% 0.02749 225.75)",
+          "oklch(60.71% 0.02749 225.75)",
+          "oklch(72.14% 0.02749 225.75)",
+          "oklch(83.57% 0.02749 225.75)",
+          "oklch(95.00% 0.02749 225.75)"
+        ]
+      },
+      "panel-highlight": {
+        "role": "neutral",
+        "displayName": "Panel Highlight",
+        "tonalRamp": [
+          "oklch(15.00% 0.03058 192.85)",
+          "oklch(26.43% 0.03058 192.85)",
+          "oklch(37.86% 0.03058 192.85)",
+          "oklch(49.29% 0.03058 192.85)",
+          "oklch(60.71% 0.03058 192.85)",
+          "oklch(72.14% 0.03058 192.85)",
+          "oklch(83.57% 0.03058 192.85)",
+          "oklch(95.00% 0.03058 192.85)"
+        ]
+      },
+      "button-primary": {
+        "role": "primary",
+        "displayName": "Button Primary",
+        "tonalRamp": [
+          "oklch(15.00% 0.12319 127.45)",
+          "oklch(26.43% 0.12319 127.45)",
+          "oklch(37.86% 0.12319 127.45)",
+          "oklch(49.29% 0.12319 127.45)",
+          "oklch(60.71% 0.12319 127.45)",
+          "oklch(72.14% 0.12319 127.45)",
+          "oklch(83.57% 0.12319 127.45)",
+          "oklch(95.00% 0.12319 127.45)"
+        ]
+      },
+      "button-primary-hover": {
+        "role": "primary",
+        "displayName": "Button Primary Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.09891 126.13)",
+          "oklch(26.43% 0.09891 126.13)",
+          "oklch(37.86% 0.09891 126.13)",
+          "oklch(49.29% 0.09891 126.13)",
+          "oklch(60.71% 0.09891 126.13)",
+          "oklch(72.14% 0.09891 126.13)",
+          "oklch(83.57% 0.09891 126.13)",
+          "oklch(95.00% 0.09891 126.13)"
+        ]
+      },
+      "button-secondary": {
+        "role": "neutral",
+        "displayName": "Button Secondary",
+        "tonalRamp": [
+          "oklch(15.00% 0.03297 198.76)",
+          "oklch(26.43% 0.03297 198.76)",
+          "oklch(37.86% 0.03297 198.76)",
+          "oklch(49.29% 0.03297 198.76)",
+          "oklch(60.71% 0.03297 198.76)",
+          "oklch(72.14% 0.03297 198.76)",
+          "oklch(83.57% 0.03297 198.76)",
+          "oklch(95.00% 0.03297 198.76)"
+        ]
+      },
+      "button-secondary-hover": {
+        "role": "neutral",
+        "displayName": "Button Secondary Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.03944 174.42)",
+          "oklch(26.43% 0.03944 174.42)",
+          "oklch(37.86% 0.03944 174.42)",
+          "oklch(49.29% 0.03944 174.42)",
+          "oklch(60.71% 0.03944 174.42)",
+          "oklch(72.14% 0.03944 174.42)",
+          "oklch(83.57% 0.03944 174.42)",
+          "oklch(95.00% 0.03944 174.42)"
+        ]
+      },
+      "button-disabled": {
+        "role": "neutral",
+        "displayName": "Button Disabled",
+        "tonalRamp": [
+          "oklch(15.00% 0.02557 212.24)",
+          "oklch(26.43% 0.02557 212.24)",
+          "oklch(37.86% 0.02557 212.24)",
+          "oklch(49.29% 0.02557 212.24)",
+          "oklch(60.71% 0.02557 212.24)",
+          "oklch(72.14% 0.02557 212.24)",
+          "oklch(83.57% 0.02557 212.24)",
+          "oklch(95.00% 0.02557 212.24)"
+        ]
+      },
+      "text-disabled": {
+        "role": "neutral",
+        "displayName": "Text Disabled",
+        "tonalRamp": [
+          "oklch(15.00% 0.01912 153.37)",
+          "oklch(26.43% 0.01912 153.37)",
+          "oklch(37.86% 0.01912 153.37)",
+          "oklch(49.29% 0.01912 153.37)",
+          "oklch(60.71% 0.01912 153.37)",
+          "oklch(72.14% 0.01912 153.37)",
+          "oklch(83.57% 0.01912 153.37)",
+          "oklch(95.00% 0.01912 153.37)"
+        ]
+      },
+      "progress-track": {
+        "role": "neutral",
+        "displayName": "Progress Track",
+        "tonalRamp": [
+          "oklch(15.00% 0.02882 186.06)",
+          "oklch(26.43% 0.02882 186.06)",
+          "oklch(37.86% 0.02882 186.06)",
+          "oklch(49.29% 0.02882 186.06)",
+          "oklch(60.71% 0.02882 186.06)",
+          "oklch(72.14% 0.02882 186.06)",
+          "oklch(83.57% 0.02882 186.06)",
+          "oklch(95.00% 0.02882 186.06)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Main title and results score; authored bitmap font."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Screen headings and subtitle; authored bitmap font."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "HUD, controls and supporting text; authored bitmap font."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel",
+        "value": "3px 4px 0 #091b22",
+        "purpose": "Unblurred structural panel shadow."
+      },
+      {
+        "name": "button",
+        "value": "2px 3px 0 #0b2027",
+        "purpose": "Unblurred structural button shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "menu-fade",
+        "value": "180ms",
+        "purpose": "Menu camera fade-in."
+      },
+      {
+        "name": "results-fade",
+        "value": "200ms",
+        "purpose": "Results camera fade-in."
+      },
+      {
+        "name": "hud-pulse",
+        "value": "180ms",
+        "purpose": "Restore HUD text opacity after a change."
+      },
+      {
+        "name": "menu-run-frame",
+        "value": "100ms",
+        "purpose": "Showcase runner frame interval."
+      }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Static HTML preview of the canvas control using the actual bitmap glyphs; dimensions are virtual pixels.",
+      "html": "<button class=\"ds-button-primary\" aria-label=\"PLAY >\"><svg aria-hidden=\"true\" width=\"35\" height=\"7\" viewBox=\"0 0 35 7\" shape-rendering=\"crispEdges\" fill=\"currentColor\"><rect x=\"0\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"18\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"22\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"18\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"22\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"19\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"21\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"31\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"32\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"33\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"32\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"31\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"6\" width=\"1\" height=\"1\"/></svg></button>",
+      "css": ".ds-button-primary{position:relative;width:136px;height:32px;padding:0;border:0;background:transparent;color:#13292f;cursor:pointer;outline:none}.ds-button-primary::before{content:\"\";position:absolute;left:0;top:5px;width:100%;height:24px;box-sizing:border-box;border:2px solid #b5d884;background:#a6cb72;box-shadow:2px 3px 0 #0b2027}.ds-button-primary::after{content:\"\";position:absolute;left:3px;right:3px;top:8px;height:1px;background:#cce6a4}.ds-button-primary svg{position:relative;display:block;margin:auto;z-index:1}.ds-button-primary:hover::before,.ds-button-primary:focus-visible::before{background:#cdeaa2}.ds-button-primary:active svg{transform:translateY(1px)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Static HTML preview of the canvas control using the actual bitmap glyphs; dimensions are virtual pixels.",
+      "html": "<button class=\"ds-button-secondary\" aria-label=\"MISSIONS\"><svg aria-hidden=\"true\" width=\"47\" height=\"7\" viewBox=\"0 0 47 7\" shape-rendering=\"crispEdges\" fill=\"currentColor\"><rect x=\"0\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"19\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"21\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"22\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"18\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"18\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"19\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"21\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"22\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"22\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"18\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"19\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"20\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"21\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"24\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"25\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"27\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"28\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"24\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"25\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"26\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"27\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"28\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"31\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"32\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"33\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"34\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"34\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"34\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"34\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"30\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"34\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"31\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"32\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"33\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"37\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"38\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"39\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"36\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"40\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"43\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"44\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"45\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"46\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"42\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"42\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"43\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"44\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"45\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"46\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"46\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"42\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"43\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"44\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"45\" y=\"6\" width=\"1\" height=\"1\"/></svg></button>",
+      "css": ".ds-button-secondary{position:relative;width:94px;height:32px;padding:0;border:0;background:transparent;color:#e8e4c6;cursor:pointer;outline:none}.ds-button-secondary::before{content:\"\";position:absolute;left:0;top:5px;width:100%;height:24px;box-sizing:border-box;border:2px solid #7f9588;background:#243f40;box-shadow:2px 3px 0 #0b2027}.ds-button-secondary::after{content:\"\";position:absolute;left:3px;right:3px;top:8px;height:1px;background:#526b5e}.ds-button-secondary svg{position:relative;display:block;margin:auto;z-index:1}.ds-button-secondary:hover::before,.ds-button-secondary:focus-visible::before{background:#3f5e55}.ds-button-secondary:active svg{transform:translateY(1px)}"
+    },
+    {
+      "name": "Disabled Button",
+      "kind": "button",
+      "refersTo": "button-disabled",
+      "description": "Static HTML preview of the canvas control using the actual bitmap glyphs; dimensions are virtual pixels.",
+      "html": "<button class=\"ds-button-disabled\" aria-label=\"MAX\" disabled><svg aria-hidden=\"true\" width=\"17\" height=\"7\" viewBox=\"0 0 17 7\" shape-rendering=\"crispEdges\" fill=\"currentColor\"><rect x=\"0\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"13\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"15\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"16\" y=\"6\" width=\"1\" height=\"1\"/></svg></button>",
+      "css": ".ds-button-disabled{position:relative;width:76px;height:32px;padding:0;border:0;background:transparent;color:#87938a;cursor:default;outline:none}.ds-button-disabled::before{content:\"\";position:absolute;left:0;top:5px;width:100%;height:24px;box-sizing:border-box;border:2px solid #435a57;background:#203337;box-shadow:2px 3px 0 #0b2027}.ds-button-disabled::after{content:\"\";position:absolute;left:3px;right:3px;top:8px;height:1px;background:#526b5e}.ds-button-disabled svg{position:relative;display:block;margin:auto;z-index:1}.ds-button-disabled:hover::before,.ds-button-disabled:focus-visible::before{background:#203337}.ds-button-disabled:active svg{transform:translateY(1px)}"
+    },
+    {
+      "name": "Pixel Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Shared hard border, top highlight and offset shadow; preview uses home showcase dimensions.",
+      "html": "<div class=\"ds-panel\" aria-label=\"Pixel panel\"></div>",
+      "css": ".ds-panel{position:relative;width:142px;height:44px;box-sizing:border-box;border:2px solid #71877b;background:#13292f;box-shadow:3px 4px 0 #091b22}.ds-panel::before{content:\"\";position:absolute;top:2px;left:2px;right:2px;height:2px;background:#334c4b}"
+    },
+    {
+      "name": "Mission Progress",
+      "kind": "custom",
+      "refersTo": "mission-progress",
+      "description": "Representative half-filled mission progress bar; runtime fill follows saved progress.",
+      "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-label=\"Mission progress\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"50\"><span></span></div>",
+      "css": ".ds-progress{width:315px;height:3px;background:#354c49}.ds-progress span{display:block;width:50%;height:3px;background:#b4d77b}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Comic-apocalypse city at dusk",
+    "overview": "Original, crisp pixel art places an expressive green horde against a cool, layered city with warm lamps. The interface uses compact bitmap labels, hard edges and chunky controls. Preserve this user-pinned world when extending the game.\n\nSprite textures and the font atlas are generated once at boot from original code-native pixel drawings; there is no shipped external raster art. City scenery is drawn with Phaser rectangles when each scene is created. New visual work should continue that authored pixel vocabulary.",
+    "keyCharacteristics": [
+      "Cool dusk city, warm lamps and green horde accents.",
+      "Original pixel silhouettes and a shared bitmap alphabet.",
+      "Fixed virtual composition with aspect-preserving scaling.",
+      "Hard bordered panels and tactile rectangular buttons."
+    ],
+    "rules": [
+      {
+        "name": "The Bitmap Rule",
+        "body": "Use the existing atlas and integer multiples of its base size; do not substitute browser-rasterized text inside the game.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "**Do** retain the original cool dusk city, warm lamps and green horde.",
+      "**Do** reuse the bitmap font, shared buttons and shared panels.",
+      "**Do** treat 480×270 as the virtual layout and let Phaser center the fitted canvas.",
+      "**Do** preserve the 32-pixel button hitboxes and visible hover/focus states."
+    ],
+    "donts": [
+      "**Don't** introduce blur, smooth gradients or antialiased shapes into the pixel art.",
+      "**Don't** replace original drawings with copied or external raster assets.",
+      "**Don't** mistake virtual pixels for guaranteed physical touch-target sizes.",
+      "**Don't** document the pre-edit 384×216 audit baseline as the current canvas size."
+    ]
+  }
+}
