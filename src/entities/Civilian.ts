@@ -3,6 +3,7 @@ import { TEXTURES } from '../config/GameConfig'
 
 export class Civilian extends Phaser.Physics.Arcade.Sprite {
   private absorbed = false
+  private variant = 0
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, TEXTURES.CIVILIAN)
@@ -12,6 +13,16 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.setImmovable(true)
     const body = this.body as Phaser.Physics.Arcade.Body
     body.setAllowGravity(false)
+    this.variant = Math.floor(x / 19) % 6
+    body.setSize(12, 23).setOffset(6, 5)
+    this.setTexture(`h${this.variant}-idle`)
+  }
+
+  react(frontX: number, elapsed: number): void {
+    if (!this.active) return
+    const panic = this.x - frontX < 100
+    this.setTexture(`h${this.variant}-${panic ? `run${Math.floor(elapsed / 110 + this.variant) % 6}` : 'idle'}`)
+    this.setVelocityX(panic ? 12 : 0)
   }
 
   consume(): boolean {
