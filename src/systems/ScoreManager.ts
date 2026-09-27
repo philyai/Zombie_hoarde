@@ -4,6 +4,7 @@ export class ScoreManager {
   private distanceValue = 0
   private scoreValue = 0
   private coinsValue = 0
+  coinPickups = 0
   private absorbedValue = 0
   private currentHordeValue = 1
   private peakHordeValue = 1
@@ -37,8 +38,9 @@ export class ScoreManager {
     this.setHorde(hordeCount)
   }
 
-  collectCoin(): void {
-    this.coinsValue += 1
+  collectCoin(amount = 1): void {
+    this.coinPickups += 1
+    this.coinsValue += amount
     this.scoreValue += 5
   }
 
