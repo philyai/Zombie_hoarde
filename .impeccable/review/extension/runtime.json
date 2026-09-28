@@ -1,0 +1,5 @@
+{
+  "errors": [],
+  "staged": true,
+  "description": "Runtime art and controller fixtures; gameplay verified separately in Playwright."
+}
