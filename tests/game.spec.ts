@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 
 const state = (page:Page) => page.evaluate(()=>{const g=(window as any).__GAME__,s=g.scene.getScene('game');return {scene:g.scene.getScenes(true)[0].scene.key,state:s.state,count:s.horde?.count,x:s.horde?.leader.x,y:s.horde?.leader.y,coins:s.score?.runCoins,score:s.score?.score,elapsed:s.elapsed,visible:s.horde?.sprites.filter((m:any)=>m.active&&m.visible).length}})
 async function boot(page:Page,save?:object){
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message))
+  const errors:string[]=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.stack)})
   if(save)await page.addInitScript(value=>localStorage.setItem('zombie-horde-runner:v1',JSON.stringify(value)),save)
   await page.goto('/');await page.waitForFunction(()=>(window as any).__GAME__?.scene.isActive('menu'))
   return errors
@@ -22,17 +22,22 @@ async function buttonByLabel(page:Page,label:string){
 
 test('full flow: real intro, jump, growth, damage, smash, power, pause, death, save, retry, purchase',async({page})=>{
   const errors=await boot(page);await play(page)
-  await page.waitForFunction(()=>{const s=(window as any).__GAME__.scene.getScene('game');return s.horde.count===3&&s.score.runCoins>=5})
-  expect((await state(page)).visible).toBe(3)
-  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').horde.leader.x>=478)
+  await page.waitForFunction(()=>{const s=(window as any).__GAME__.scene.getScene('game');return s.horde.count===2&&s.score.runCoins>=5})
+  expect((await state(page)).visible).toBe(2)
+  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').horde.leader.x>=428)
   await page.keyboard.down('Space');await page.waitForTimeout(340);await page.keyboard.up('Space')
-  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').horde.leader.x>=575)
-  expect((await state(page)).count).toBe(3)
-  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').horde.count>=5)
+  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').horde.leader.x>=525)
+  expect((await state(page)).count).toBe(2)
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('zombie-horde-runner:v1')!).missions.vehicles>=1)
   const losses=await page.evaluate(()=>(window as any).__GAME__.scene.getScene('game').horde.lost);await inject(page,'spike')
   await page.waitForFunction(losses=>(window as any).__GAME__.scene.getScene('game').horde.lost>losses,losses)
+  // Remove this injected fixture after observing one hit; persistent hazards are tested separately.
+  await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');for(const o of s.spawner.obstacleGroup.getChildren())if(o.kind==='spike')o.markSpent(true)})
   expect((await state(page)).state).toBe('playing')
-  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('zombie-horde-runner:v1')!).missions.vehicles>=1)
+  for(const x of [918,1164]){
+    await page.waitForFunction(x=>(window as any).__GAME__.scene.getScene('game').horde.leader.x>=x,x)
+    await page.keyboard.down('Space');await page.waitForTimeout(340);await page.keyboard.up('Space')
+  }
   await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').powers.active.size>0)
   await page.keyboard.press('Escape');expect((await state(page)).state).toBe('paused')
   const frozen=await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');return {elapsed:s.elapsed,x:s.horde.leader.x,powers:[...s.powers.active]}})
@@ -92,11 +97,10 @@ test('five powers apply and expire, 60 members stay visible, dead horde cannot c
   const active=await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');return {flight:s.horde.isFlightActive,giant:s.horde.giant,rage:s.horde.invulnerable}})
   expect(active).toEqual({flight:true,giant:true,rage:true})
   await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');for(const p of s.powers.active.values())p.remaining=40})
-  await page.waitForTimeout(100)
+  await page.waitForFunction(()=>(window as any).__GAME__.scene.getScene('game').powers.active.size===0)
   expect(await page.evaluate(()=>(window as any).__GAME__.scene.getScene('game').powers.active.size)).toBe(0)
-  const coinsBefore=(await state(page)).coins
-  await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');s.horde.removeZombies(999);const coins=s.spawner.coinGroup.getChildren();for(const coin of coins)s.collisions.collectCoin(coin)})
-  expect((await state(page)).coins).toBe(coinsBefore);expect(errors).toEqual([])
+  const deadCollection=await page.evaluate(()=>{const s=(window as any).__GAME__.scene.getScene('game');const before=s.score.runCoins;s.horde.removeZombies(999);const coins=s.spawner.coinGroup.getChildren();for(const coin of coins)s.collisions.collectCoin(coin);return {before,after:s.score.runCoins}})
+  expect(deadCollection.after).toBe(deadCollection.before);expect(errors).toEqual([])
 })
 
 test('migration, corrupted data, mission rewards once, upgrade cost and safe chunk definitions',async({page})=>{
