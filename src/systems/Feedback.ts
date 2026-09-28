@@ -26,7 +26,9 @@ export class Feedback {
   }
   shake(strength = .003): void { if (saveManager.load().settings.shake) this.scene.cameras.main.shake(130, strength) }
   death(source: Phaser.GameObjects.Sprite, cause: string): void {
-    const dead = this.scene.add.image(source.x, source.y, source.texture.key).setDepth(40).setTint(cause === 'electric' ? 0xe7f3ff : 0xeaa78d)
+    const dead = source.setDepth(40).setTint(cause === 'electric' ? 0xe7f3ff : 0xeaa78d)
+    const variant = source.texture.key.match(/^z\d/)
+    if (variant) dead.setTexture(`${variant[0]}-${cause === 'pit' ? 'fall' : 'hit'}`)
     this.burst(source.x, source.y, cause === 'electric' ? 0x9ce5f5 : 0x9ba966, 8)
     this.scene.tweens.add({ targets: dead, x: source.x + (cause === 'pit' ? 7 : -28), y: source.y - (cause === 'pit' ? 0 : 25), angle: -75, duration: 170, onComplete: () => {
       this.scene.tweens.add({ targets: dead, x: dead.x - 15, y: 310, angle: -170, duration: 480, onComplete: () => dead.destroy() })
