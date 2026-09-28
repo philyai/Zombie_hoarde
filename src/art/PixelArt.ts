@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { buildLargeObstacleArt } from './LargeObstacleArt'
 
 // Authored 5x7 glyphs, drawn into a bitmap atlas. No platform font rasterization.
 const GLYPHS: Record<string, string> = {
@@ -29,7 +30,7 @@ export function buildArt(scene: Phaser.Scene): void {
     const prefix = human ? `h${variant-4}` : `z${variant}`
     const skin = human ? ['#dfa779','#bf8467','#e5b699'][variant%3] : ['#a8d477','#87bc70','#c0cd76','#7eae83'][variant]
     const shirt = ['#647c89','#985f54','#caa54f','#706b8e','#b8b9a1','#438887'][variant%6]
-    for (const pose of ['idle','jump','fall','land','bite','hit','death',...Array.from({length:6},(_,i)=>`run${i}`)]) {
+    for (const pose of ['idle','jump','fall','land','bite','push','hit','death',...Array.from({length:6},(_,i)=>`run${i}`)]) {
       texture(`${prefix}-${pose}`,24,28,r => {
         const f = pose.startsWith('run') ? +pose.slice(3) : 0
         const step = [0,2,3,0,-2,-3][f], bob = f===1 || f===4 ? 1 : 0
@@ -49,6 +50,7 @@ export function buildArt(scene: Phaser.Scene): void {
         const armY = airborne ? 10 : 14 + (f%3)
         r(15,armY,5,4,shirt); r(18,armY+2,5,3,skin)
         if(pose==='bite') r(19,headY+7,4,2,'#eaa386')
+        if(pose==='push'){r(15,13,8,3,shirt);r(20,12,3,6,skin);r(13,17,9,3,shirt);r(20,17,3,4,skin);r(12,headY+2,8,1,dark)}
         if(human && airborne) r(4,9,3,8,skin)
         r(8,21,4,Math.max(2,5-Math.abs(step)),dark); r(7-step,24-Math.abs(step),6,3,dark)
         r(13,21,4,airborne?3:5,dark); r(13+step,airborne?23:25,6,2,dark)
@@ -67,13 +69,19 @@ export function buildArt(scene: Phaser.Scene): void {
   texture('pit',32,64,r=>{r(0,0,32,64,'#0b1b23');r(0,3,4,55,'#283536');r(28,0,4,64,'#3c4842');r(3,9,2,18,'#5d6552');r(26,17,3,12,'#5d6552')})
   texture('fence',22,25,r=>{r(3,4,3,21,'#77684c');r(17,4,3,21,'#77684c');r(0,6,22,6,'#cba85e');r(0,16,22,5,'#cba85e');for(let i=1;i<22;i+=7)r(i,6,3,6,'#453f35');r(2,6,18,1,'#efd694')})
   texture('spike',26,12,r=>{r(0,9,26,3,'#785455');for(let i=0;i<3;i++){r(2+i*9,6,6,4,'#b0b9b3');r(3+i*9,3,4,4,'#d4d8be');r(4+i*9,0,2,5,'#ece5c9')}})
-  for(const [key,w,h,col] of [['car',40,23,'#b45f50'],['truck',48,34,'#729198'],['bus',66,34,'#c49b4f'],['armored',62,35,'#788568']] as const) texture(key,w,h,r=>{
+  for(const [key,w,h,col] of [['car',40,23,'#b45f50'],['truck',48,34,'#729198'],['armored',62,35,'#788568']] as const) texture(key,w,h,r=>{
     r(2,9,w-4,h-13,'#23383b');r(4,7,w-8,h-13,col);r(10,2,w-22,12,col);r(11,3,w-25,7,'#354d55');r(12,3,w-27,2,'#95b6b5')
     if(key==='car'){r(w-13,10,10,5,col);r(w-11,10,7,1,'#daa181')}else{for(let x=6;x<w-6;x+=10){r(x,6,7,8,'#304a54');r(x,6,7,2,'#a0bdaf')}r(4,18,w-9,2,'#dfbe78')}
     r(0,h-9,w,3,'#293738');r(3,h-10,5,3,'#d98165');r(w-6,h-11,4,3,'#ffdea0')
     r(6,h-7,9,7,'#17262c');r(w-17,h-7,9,7,'#17262c');r(8,h-5,5,3,'#7a8985');r(w-15,h-5,5,3,'#7a8985');r(19,h-13,5,1,'#ddc095')
   })
-  texture('airplane',46,20,r=>{r(5,9,36,6,'#8da9a8');r(12,3,8,15,'#c0caba');r(10,0,4,20,'#728f90');r(4,10,5,3,'#dfa974');r(28,6,8,4,'#304e57');r(38,7,5,10,'#bc7c61')})
+  buildLargeObstacleArt(scene)
+  texture('zombie-head',12,12,r=>{r(1,1,10,10,'#294038');r(2,2,9,7,'#b2d27e');r(4,4,2,2,'#edf0c3');r(8,4,2,2,'#edf0c3');r(5,5,1,1,'#193334');r(9,5,1,1,'#193334');r(6,8,4,2,'#284036')})
+  texture('drone',26,16,r=>{r(3,1,20,2,'#a1b5a3');r(0,0,9,1,'#4d6c70');r(17,0,9,1,'#4d6c70');r(7,4,12,8,'#708d87');r(10,6,6,4,'#bd7b60');r(11,7,4,1,'#f1c18d');r(5,8,3,8,'#365960');r(18,8,3,8,'#365960')})
+  for(const lit of [0,1])texture(`mine${lit}`,16,9,r=>{
+    r(1,4,14,5,'#172d31');r(3,2,10,5,'#8d9580');r(5,0,6,3,'#516c68');r(2,4,12,1,'#d7cf94');
+    r(3,6,3,2,'#d5aa5e');r(10,6,3,2,'#d5aa5e');r(7,1,2,2,lit?'#ffd28a':'#ae654f');r(7,5,2,3,'#3d4d43')
+  })
   texture('electric',24,36,r=>{r(0,0,5,36,'#778a89');r(19,0,5,36,'#778a89');for(let y=3;y<31;y+=7){r(5,y,11,2,'#b8e5d5');r(12,y+2,8,2,'#72aaa9')}r(0,31,24,5,'#a5874e')})
   texture('crate',22,22,r=>{r(0,0,22,22,'#4e4638');r(2,2,18,18,'#a78859');r(3,3,16,2,'#dcc38b');r(3,17,16,2,'#d0b482');r(4,5,2,12,'#65583d');r(16,5,2,12,'#65583d');for(let i=0;i<5;i++)r(5+i*2,5+i*2,3,3,'#d0b482')})
   for(const kind of ['flight','magnet','rage','giant','boost']) texture(`power-${kind}`,18,18,r=>{

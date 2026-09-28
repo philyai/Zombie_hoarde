@@ -55,7 +55,7 @@ export const MAX_DAMAGE = 12
 
 export const FLIGHT_DURATION_MS = 6000
 export const FLIGHT_CRUISE_Y = 82
-export const FLIGHT_COLLECTION_RADIUS = 68
+export const FLIGHT_COLLECTION_RADIUS = 14
 export const FLIGHT_MIN_DISTANCE = 60
 
 export const CHUNK_GAP = 0
