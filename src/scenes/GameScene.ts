@@ -1,11 +1,12 @@
 import Phaser from 'phaser'
-import { CAMERA_FOLLOW_X, CRITICAL_MASS_SIZE, GAME_HEIGHT, GAME_WORLD_WIDTH, MAX_SPEED, SCENES, SPEED_ACCELERATION, START_SPEED } from '../config/GameConfig'
+import { CAMERA_FOLLOW_X, CRITICAL_MASS_SIZE, GAME_HEIGHT, GAME_WORLD_WIDTH, SCENES, START_SPEED } from '../config/GameConfig'
 import { Horde } from '../entities/Horde'
 import { ChunkSpawner } from '../systems/ChunkSpawner'
 import { CollisionManager } from '../systems/CollisionManager'
 import { saveManager } from '../systems/SaveManager'
 import { ScoreManager } from '../systems/ScoreManager'
 import { PowerupManager } from '../systems/PowerupManager'
+import { DifficultyManager } from '../systems/DifficultyManager'
 import { audio } from '../systems/AudioManager'
 import { feedback } from '../systems/Feedback'
 import { CityWorld } from '../art/CityWorld'
@@ -44,11 +45,12 @@ export class GameScene extends Phaser.Scene {
   private lastHorde=-1
   private bannerRemaining=0
   private banked=false
+  private milestone=0
   constructor(){super(SCENES.GAME)}
   create():void{
     this.state='playing';this.elapsed=0;this.deathElapsed=0;this.worldSpeed=START_SPEED
     this.criticalMassTriggered=false;this.pointerHeld=false;this.jumpQueued=false;this.inputBlocked=true;this.overlay=[];this.buttons=[]
-    this.lastCoins=-1;this.lastHorde=-1;this.banked=false;this.bannerRemaining=0
+    this.lastCoins=-1;this.lastHorde=-1;this.banked=false;this.bannerRemaining=0;this.milestone=0
     this.time.paused=false;this.tweens.resumeAll();this.physics.resume()
     this.physics.world.setBounds(0,0,GAME_WORLD_WIDTH,GAME_HEIGHT+100)
     this.cameras.main.setScroll(0,0);this.world=new CityWorld(this)
@@ -90,20 +92,25 @@ export class GameScene extends Phaser.Scene {
       if(this.deathElapsed>=850){this.state='results';this.bankRun();this.scene.start(SCENES.GAME_OVER,{...this.score.summary(),isNewBest:this.score.score>this.bestBefore})}
       return
     }
-    this.elapsed+=delta;this.worldSpeed=Math.min(MAX_SPEED,this.worldSpeed+SPEED_ACCELERATION*delta/1000)
+    this.elapsed+=delta;this.worldSpeed=DifficultyManager.at(this.score.distance).speed
     let held=this.pointerHeld||!!this.space?.isDown||!!this.up?.isDown
     if(this.inputBlocked){if(!held)this.inputBlocked=false;held=false}
     this.horde.setForwardSpeed(this.worldSpeed);this.horde.applyInput(held,delta,this.jumpQueued);this.jumpQueued=false;this.horde.update(this.horde.leader.x)
+    const travelStart=(this.horde.leader.body as Phaser.Physics.Arcade.Body).x
     // One bounded delta drives both physics and game timers, including low-frame-rate play.
     this.physics.world.update(_time,delta)
-    this.score.updateDistance(this.worldSpeed*delta/1000,this.horde.count)
+    const traveled=Math.max(0,(this.horde.leader.body as Phaser.Physics.Arcade.Body).x-travelStart)
+    this.score.updateDistance(traveled,this.horde.count)
+    this.collisions.update(delta)
     this.cameras.main.scrollX=Math.max(this.cameras.main.scrollX,this.horde.leader.x-CAMERA_FOLLOW_X,0)
     this.world.update(this.cameras.main.scrollX,this.elapsed)
     this.spawner.update(this.cameras.main.scrollX,this.score.distance,delta,this.horde.leader.x)
-    this.powers.update(delta,this.spawner);this.collisions.updatePitFalls();this.collisions.updateFlightCollection()
+    this.powers.update(delta,this.spawner,this.score.distance);this.collisions.updatePitFalls();this.collisions.updateFlightCollection()
     // A fall beyond the pit volume remains lethal; no world-bottom platform.
     for(const sprite of [...this.horde.sprites])if(sprite.y>GAME_HEIGHT+20)this.horde.removeMember(sprite,'pit')
     this.score.setHorde(this.horde.count)
+    const milestone=Math.floor(this.score.distance/500)
+    if(milestone>this.milestone){this.milestone=milestone;this.showBanner(`${milestone*500} M - KEEP RUNNING!`)}
     this.updateHud(delta);audio.music(this.elapsed)
     if(!this.horde.count)this.finishRun()
   }
@@ -128,12 +135,18 @@ export class GameScene extends Phaser.Scene {
     if(this.lastHorde>=0&&this.lastHorde!==this.horde.count)this.pulse(this.hordeText)
     this.lastCoins=this.score.runCoins;this.lastHorde=this.horde.count
     const messages=this.elapsed<4200?'TAP / SPACE: JUMP. HOLD: GO HIGHER.':this.elapsed<9500?'JUMP THE GAP. FOLLOW THE COINS.':this.elapsed<16000?'3 ZOMBIES CAN SMASH A CAR.':this.elapsed<22000?'COLLECT SUPPLIES FOR A POWER-UP.':''
-    this.tutorial.setText(messages)
+    this.tutorial.setText(this.horde.isFlightActive?(this.horde.flightPhase==='landing'?'LANDING - SAFE ROAD AHEAD':'FLIGHT: HOLD TO RISE. RELEASE TO DESCEND.'):messages)
+    this.tutorial.setY(this.horde.isFlightActive&&this.horde.flightPhase!=='landing'?173:57)
     this.bannerRemaining-=delta;if(this.bannerRemaining<=0)this.banner.setText('')
     this.powerBar.clear();const lines:string[]=[]
     this.powerIcons.forEach(icon=>icon.setVisible(false))
     let i=0
-    for(const [kind,power] of this.powers.active){lines.push(`${kind.toUpperCase()} ${Math.ceil(power.remaining/1000)}S`);this.powerIcons[i].setTexture(`power-${kind}`).setVisible(true);this.powerBar.fillStyle(0x45605a).fillRect(99,43+i*20,40,4).fillStyle(0xc5d889).fillRect(99,43+i*20,Math.ceil(40*power.remaining/power.duration),4);i++}
+    for(const [kind,power] of this.powers.active){
+      const landing=kind==='flight'&&this.horde.flightPhase==='landing'
+      lines.push(landing?'FLIGHT LAND':`${kind.toUpperCase()} ${Math.ceil(power.remaining/1000)}S`)
+      this.powerIcons[i].setTexture(`power-${kind}`).setVisible(true).setAlpha(landing&&Math.floor(this.elapsed/180)%2?.45:1)
+      this.powerBar.fillStyle(0x45605a).fillRect(99,43+i*20,40,4).fillStyle(landing?0xf0ba85:0xc5d889).fillRect(99,43+i*20,Math.ceil(40*power.remaining/power.duration),4);i++
+    }
     this.powerText.setText(lines.join('\n'))
     this.debugText?.setText(`FPS ${Math.round(this.game.loop.actualFps)} VY ${Math.round((this.horde.leader.body as Phaser.Physics.Arcade.Body).velocity.y)} HORDE ${this.horde.count}\n${this.spawner.currentChunk}  SPEED ${Math.round(this.worldSpeed)}  OBJECTS ${this.children.length}`)
   }
@@ -175,7 +188,7 @@ export class GameScene extends Phaser.Scene {
     const data=saveManager.load();data.tutorialSeen=true;saveManager.save(data)
   }
   finishRun():void{
-    if(this.state!=='playing')return
+    if(this.state!=='playing'||this.horde.count!==0)return
     this.state='dying';this.physics.pause();this.pointerHeld=false;this.deathElapsed=0
     this.tutorial.setText('');audio.play('death');feedback(this).shake(.005)
   }
