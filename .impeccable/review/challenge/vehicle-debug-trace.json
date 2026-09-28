@@ -1,0 +1,26 @@
+[
+  {
+    "obstacle": "car",
+    "obstacleId": 1,
+    "zombieId": 2,
+    "timestamp": 1738.5,
+    "handler": "CollisionManager",
+    "required": 3,
+    "hordeBefore": 4,
+    "hordeAfter": 4,
+    "state": "pushing-success",
+    "decision": "start-success"
+  },
+  {
+    "obstacle": "car",
+    "obstacleId": 1,
+    "zombieId": 2,
+    "timestamp": 1738.5,
+    "handler": "CollisionManager",
+    "required": 3,
+    "hordeBefore": 4,
+    "hordeAfter": 4,
+    "state": "destroyed",
+    "decision": "break-success"
+  }
+]

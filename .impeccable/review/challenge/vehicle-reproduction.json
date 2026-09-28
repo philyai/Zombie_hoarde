@@ -1,0 +1,17 @@
+{
+  "phase": "before collision fix",
+  "runner": "Playwright / Microsoft Edge",
+  "scenarios": [
+    {
+      "name": "4/3 ready marker with distant living followers",
+      "expected": {"spent": true, "count": 4, "lost": 0, "state": "playing"},
+      "observed": {"spent": false, "count": 3, "lost": 1, "state": "playing"}
+    },
+    {
+      "name": "airborne follower overlaps during accepted grounded push",
+      "expected": {"spent": true, "count": 4, "lost": 0},
+      "observed": {"spent": true, "count": 3, "lost": 1}
+    }
+  ],
+  "note": "Recorded from failing deterministic tests before editing production resolution. The same assertions pass after the fix."
+}
