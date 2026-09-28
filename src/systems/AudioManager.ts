@@ -1,5 +1,5 @@
 import { saveManager } from './SaveManager'
-type Cue = 'jump' | 'land' | 'coin' | 'convert' | 'hit' | 'smash' | 'power' | 'mission' | 'death' | 'click'
+type Cue = 'jump' | 'land' | 'coin' | 'convert' | 'hit' | 'smash' | 'heavy' | 'power' | 'mission' | 'death' | 'click'
 /** Original synthesized square-wave cues; no external recordings. */
 class AudioManager {
   private context?: AudioContext
@@ -19,7 +19,7 @@ class AudioManager {
   }
   play(cue: Cue): void {
     if (!saveManager.load().settings.sound) return
-    const notes: Record<Cue, [number, number, number]> = { jump: [190, .13, 420], land: [70, .04, 45], coin: [880, .08, 1400], convert: [240, .14, 580], hit: [130, .18, 35], smash: [80, .25, 25], power: [330, .25, 990], mission: [660, .4, 1320], death: [150, .6, 25], click: [400, .04, 520] }
+    const notes: Record<Cue, [number, number, number]> = { jump: [190, .13, 420], land: [70, .04, 45], coin: [880, .08, 1400], convert: [240, .14, 580], hit: [130, .18, 35], smash: [80, .25, 25], heavy: [65, .65, 22], power: [330, .25, 990], mission: [660, .4, 1320], death: [150, .6, 25], click: [400, .04, 520] }
     const [f, d, e] = notes[cue]; this.tone(f, d, .025, e)
   }
   music(elapsed: number, menu = false): void {

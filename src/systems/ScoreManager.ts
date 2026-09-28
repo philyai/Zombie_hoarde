@@ -48,6 +48,8 @@ export class ScoreManager {
     this.scoreValue += Math.max(0, points)
   }
 
+  awardCoins(amount:number):void{this.coinsValue+=Math.max(0,Math.floor(amount))}
+
   setHorde(count: number): void {
     this.currentHordeValue = Math.max(0, Math.floor(count))
     this.peakHordeValue = Math.max(this.peakHordeValue, this.currentHordeValue)
