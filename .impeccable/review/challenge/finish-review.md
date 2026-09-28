@@ -31,4 +31,3 @@ None. Persistent milestone text and dust in the staged captures are disclosed fi
 ## keep
 
 Keep the compact Current/Required plus PUSH/JUMP plates, clear landing boundaries, original pixel silhouettes, and incumbent canvas composition.
-

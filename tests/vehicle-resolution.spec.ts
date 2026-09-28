@@ -175,4 +175,3 @@ test('successful push, later death and real Retry leave one collision listener a
   })
   expect(r).toEqual({fresh:true,oldDestroyed:true,newListeners:1,spent:true,count:4,lost:0})
 })
-
